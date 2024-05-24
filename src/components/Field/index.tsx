@@ -6,6 +6,8 @@ interface CellsField {
   array: boolean[][];
 }
 
+let intervalId: NodeJS.Timeout;
+
 const Field = () => {
   const [cells, setCells] = useState<CellsField>({array: []});
   const [begun, setBegun] = useState(false);
@@ -20,12 +22,12 @@ const Field = () => {
       if (index === i) {
         return row.map((cell, index) => {
           if (index === j) {
-            return !cell
+            return !cell;
           }
-          return cell
+          return cell;
         })
       }
-      return row
+      return row;
     })})
   }
 
@@ -87,7 +89,7 @@ const Field = () => {
   const startGame = () => {
     if (begun) {
       setBegun(!begun);
-      setInterval(() => {
+      intervalId = setInterval(() => {
         cells.array.forEach((row, i) => {
           row.forEach((_, j) => {
             checkup(i, j);
@@ -95,13 +97,14 @@ const Field = () => {
         });
       }, 1000);
     }
-}
-
-const stopGame = () => {
-  if (!begun) {
-    setBegun(true);
   }
-}
+
+  const stopGame = () => {
+    if (!begun) {
+      setBegun(true);
+      clearInterval(intervalId);
+    }
+  }
 
   return (
     <div className="Field">
