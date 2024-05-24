@@ -1,0 +1,8 @@
+.Cell {
+  background-color: aliceblue;
+  border: 1px solid black;
+}
+
+.Cell_active {
+  background-color: black;
+}
