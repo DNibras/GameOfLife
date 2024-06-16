@@ -9,13 +9,11 @@ interface CellsField {
 let intervalId: NodeJS.Timeout;
 
 const Field = () => {
-  const [cells, setCells] = useState<CellsField>({array: []});
-  const [begun, setBegun] = useState(false);
+  const [cells, setCells] = useState<CellsField>({array: Array(50).fill(0).map(() => Array(50).fill(false))});
 
-
-  useEffect(() => {
-    setCells({array: Array(10).fill(0).map(() => Array(10).fill(false))});
-  }, []);
+  // useEffect(() => {
+  //   setCells();
+  // }, []);
 
   const toggleCell = (i: number, j: number) => {
     setCells({array: cells.array.map((row, index) => {
@@ -31,79 +29,38 @@ const Field = () => {
     })})
   }
 
-  const checkup = (i: number, j: number) => {
-    setCells({array: cells.array.map((row, index) => {
-      if (index === i) {
-        return row.map((cell, index) => {
-          if (index === j) {
-            let activeCells = 0;
-            if (i > 0) {
-              if (cells.array[i - 1][j]) {
-                activeCells++;
-              }
-              if (j > 0 && cells.array[i - 1][j - 1]) {
-                activeCells++;
-              }
-              if (j < row.length - 1 && cells.array[i - 1][j + 1]) {
-                activeCells++;
-              }
-            }
-            if (i < cells.array.length - 1) {
-              if (cells.array[i + 1][j]) {
-                activeCells++;
-              }
-              if (j > 0 && cells.array[i + 1][j - 1]) {
-                activeCells++;
-              }
-              if (j < row.length - 1 && cells.array[i + 1][j + 1]) {
-                activeCells++;
-              }
-            }
-            if (j > 0 && cells.array[i][j - 1]) {
-              activeCells++;
-            }
-            if (j < row.length - 1 && cells.array[i][j + 1]) {
-              activeCells++;
-            }
-            if (i > 0 && j > 0 && cells.array[i - 1][j - 1]) {
-              activeCells++;
-            }
-            if (i > 0 && j < row.length - 1 && cells.array[i - 1][j + 1]) {
-              activeCells++;
-            }
-            if (i < cells.array.length - 1 && j > 0 && cells.array[i + 1][j - 1]) {
-              activeCells++;
-            }
-            if (i < cells.array.length - 1 && j < row.length - 1 && cells.array[i + 1][j + 1]) {
-              activeCells++;
-            }
-            return activeCells < 1 || activeCells > 3 ? false : activeCells === 2 ? true : cell;
+  const checkup = (oldCells: CellsField,i: number, j: number) => {
+    let activeCells = 0;
+
+    for (let x = Math.max(0, i - 1); x <= Math.min(oldCells.array.length - 1, i + 1); x++) {
+      for (let y = Math.max(0, j - 1); y <= Math.min(oldCells.array[x].length - 1, j + 1); y++) {
+        if (x !== i || y !== j) {
+          if (oldCells.array[x][y]) {
+            activeCells++;
           }
-          return cell;
-        })
+        }
       }
-      return row;
-    })});
+    }
+
+    return (activeCells === 3 || (activeCells === 2 && oldCells.array[i][j]));
+  
   }
 
   const startGame = () => {
-    if (begun) {
-      setBegun(!begun);
-      intervalId = setInterval(() => {
-        cells.array.forEach((row, i) => {
-          row.forEach((_, j) => {
-            checkup(i, j);
-          });
-        });
-      }, 1000);
-    }
+    intervalId = setInterval(() => {
+      setCells((oldCells) => ({
+        array: oldCells.array.map((row, i) => {
+          return row.map((_, j) => {
+            return checkup(oldCells,i, j);
+          })
+        })
+      }
+      ))
+    }, 1000);
   }
 
   const stopGame = () => {
-    if (!begun) {
-      setBegun(true);
-      clearInterval(intervalId);
-    }
+    clearInterval(intervalId);
   }
 
   return (
@@ -121,6 +78,7 @@ const Field = () => {
       </table>
       <button className="Start" onClick={startGame}>старт</button>
       <button className="Stop" onClick={stopGame}>стоп</button>
+      <button className="random" onClick={() => setCells({array: Array(50).fill(0).map(() => Array(50).fill(0).map(() => Math.random() > 0.9))})}>рандом</button>
     </div>
   )
 }
